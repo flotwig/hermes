@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { ElectronService } from './providers/electron.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AppConfig } from './app.config';
+import { BrowsePaneComponent } from './browse-pane/browse-pane.component';
+import { DisplayPaneComponent } from './display-pane/display-pane.component';
+import { AccountWizardComponent } from './account-wizard/account-wizard.component';
 
 @Component({
   selector: 'app-root',

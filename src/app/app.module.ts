@@ -18,7 +18,9 @@ import { ElectronService } from './providers/electron.service';
 import { WebviewDirective } from './directives/webview.directive';
 
 import { AppComponent } from './app.component';
-import { HomeComponent } from './components/home/home.component';
+import { BrowsePaneComponent } from './browse-pane/browse-pane.component';
+import { DisplayPaneComponent } from './display-pane/display-pane.component';
+import { AccountWizardComponent } from './account-wizard/account-wizard.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -28,8 +30,10 @@ export function HttpLoaderFactory(http: HttpClient) {
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
-    WebviewDirective
+    WebviewDirective,
+    BrowsePaneComponent,
+    DisplayPaneComponent,
+    AccountWizardComponent
   ],
   imports: [
     BrowserModule,
