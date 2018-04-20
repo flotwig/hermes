@@ -22,6 +22,8 @@ import { BrowsePaneComponent } from './browse-pane/browse-pane.component';
 import { DisplayPaneComponent } from './display-pane/display-pane.component';
 import { AccountWizardComponent } from './account-wizard/account-wizard.component';
 
+import { ModalModule, CarouselModule } from 'ngx-bootstrap';
+
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -40,6 +42,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     HttpClientModule,
     AppRoutingModule,
+    ModalModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -48,7 +51,12 @@ export function HttpLoaderFactory(http: HttpClient) {
       }
     })
   ],
-  providers: [ElectronService],
+  entryComponents: [
+    AccountWizardComponent
+  ],
+  providers: [
+    ElectronService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
