@@ -7,7 +7,7 @@
     <p class="mb-1">Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus varius blandit.</p>
     <small>Donec id elit non mi porta.</small>
   </a>
-  <span *ngIf="!messages" class="alert alert-light text-center">
+  <span *ngIf="messages.length == 0" class="alert alert-light text-center">
     No messages!
   </span>
 </div>

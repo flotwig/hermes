@@ -24,6 +24,10 @@ import { AccountWizardComponent } from './account-wizard/account-wizard.componen
 
 import { ModalModule, CarouselModule } from 'ngx-bootstrap';
 
+import { OAuthModule } from 'angular-oauth2-oidc';
+
+import { MicrosoftGraphService } from './services/microsoft-graph.service';
+
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -43,6 +47,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     HttpClientModule,
     AppRoutingModule,
     ModalModule.forRoot(),
+    OAuthModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -55,7 +60,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     AccountWizardComponent
   ],
   providers: [
-    ElectronService
+    ElectronService,
+    MicrosoftGraphService
   ],
   bootstrap: [AppComponent]
 })

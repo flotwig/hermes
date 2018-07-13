@@ -33,7 +33,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.bsModalRef = this.modalService.show(AccountWizardComponent);
+    this.bsModalRef = this.modalService.show(AccountWizardComponent, {
+      class: 'modal-lg'
+    });
     this.bsModalRef.content.closeBtnName = 'Close';
   }
 }

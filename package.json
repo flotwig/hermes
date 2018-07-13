@@ -35,6 +35,8 @@
     "e2e": "npm-run-all -p -r pree2e:build pree2e:protractor"
   },
   "dependencies": {
+    "@microsoft/microsoft-graph-client": "^1.0.0",
+    "angular-oauth2-oidc": "^3.1.4",
     "bootstrap": "^4.1.0",
     "jquery": "^3.3.1",
     "ngx-bootstrap": "^2.0.4",
@@ -56,6 +58,7 @@
     "@angular/platform-browser": "5.2.9",
     "@angular/platform-browser-dynamic": "5.2.9",
     "@angular/router": "5.2.9",
+    "@microsoft/microsoft-graph-types": "^1.2.0",
     "@ngx-translate/core": "9.1.1",
     "@ngx-translate/http-loader": "2.0.1",
     "@types/jasmine": "2.8.6",
