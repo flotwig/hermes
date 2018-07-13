@@ -1,4 +1,4 @@
-const {app, BrowserWindow} = require('../node_modules/electron/index.js')
+const {app, BrowserWindow} = require('electron')
 
 app.on('ready', () => {
     var win = new BrowserWindow({width: 800, height: 600})
