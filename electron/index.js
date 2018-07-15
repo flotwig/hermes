@@ -1,6 +1,26 @@
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
+
+const Api = require('./api.js')
+global.Sync = require('./sync.js')
+
+Sync.init()
+
+
+var mainWindow;
 
 app.on('ready', () => {
-    var win = new BrowserWindow({width: 800, height: 600})
-    win.loadURL(process.argv[2])
-}) 
+    mainWindow = new BrowserWindow(
+        {
+            width: 800, 
+            height: 600,
+            autoHideMenuBar: true
+        }
+    )
+    mainWindow.loadURL(process.argv[2])
+})
+
+console.log = (...log) => {
+    mainWindow.webContents.send('log-message', log)
+}
+
+ipcMain.on('api-request', Api.handleRequest.bind(Api))

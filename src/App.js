@@ -1,21 +1,27 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import NewAccount from './view/NewAccount';
+import BrowsingPane from './view/BrowsingPane';
+import ReadingPane from './view/ReadingPane';
+import { Container, Row, Col } from 'reactstrap'
+import Api from './Api'
 
 class App extends Component {
   render() {
     return (
-      <div className="App">
-        <NewAccount/>
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
+      <Api>
+        <Container fluid={true}>
+          <NewAccount/>
+          <Row noGutters={true}>
+            <Col md="3" className="border-right">
+              <BrowsingPane/>
+            </Col>
+            <Col md="9">
+              <ReadingPane/>
+            </Col>
+          </Row>
+        </Container>
+      </Api>
     );
   }
 }

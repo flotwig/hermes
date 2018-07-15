@@ -5,7 +5,6 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.1.0",
     "bootstrap": "^4.1.2",
-    "electron-google-oauth": "^2.0.0",
     "googleapis": "^32.0.0",
     "moment": "^2.22.2",
     "react": "^16.4.1",
@@ -13,7 +12,8 @@
     "react-responsive-modal": "^3.1.0",
     "react-scripts": "1.1.4",
     "reactstrap": "^6.3.0",
-    "request": "^2.87.0"
+    "request": "^2.87.0",
+    "sqlite3": "^4.0.1"
   },
   "scripts": {
     "start": "react-scripts start",

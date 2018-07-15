@@ -1,0 +1,25 @@
+const ApiActions = require('../src/ApiActions')
+const {ipcMain} = require('electron')
+const Db = require('./db')
+
+var Api = {
+    handleRequest: (event, cbId, action, payload) => {
+        console.log('received request for action ', event, cbId, action, payload)
+        Api.actions[action](payload, (response, error)=>Api.sendResponse(event.sender, cbId, response, error))
+    },
+    sendResponse: (sender, cbId, response, error) => {
+        sender.send('api-response', cbId, response, error)
+    },
+    actions: {}
+}
+
+Api.actions[ApiActions.ADD_ACCOUNT] = (payload, cb) => {
+    Db.insertAccount(payload, (error) => {
+        if (!error) {
+            Sync.beginSyncing(Object.assign(payload, {id:this.lastID}))
+        }
+        cb(this, error)
+    })
+}
+
+module.exports = Api

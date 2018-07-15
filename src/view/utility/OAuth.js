@@ -1,34 +1,38 @@
 import React, { Component } from 'react';
 import { Card, CardTitle, CardText, Button } from 'reactstrap';
 import request from 'request'
+import './OAuth.css';
+
 const {BrowserWindow, BrowserView} = window.require('electron').remote
 
 export default class OAuth extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            authUri: props.authUri,
-            tokenUri: props.tokenUri,
-            clientId: props.clientId,
-            clientSecret: props.clientSecret,
-            scope: props.scopes.join(' '),
+            authUri: props.oauthParams.authUri,
+            tokenUri: props.oauthParams.tokenUri,
+            clientId: props.oauthParams.clientId,
+            clientSecret: props.oauthParams.clientSecret,
+            scope: props.oauthParams.scopes.join(' '),
             redirectUri: window.location.origin,
             loggingIn: false
         }
     }
     render() {
         return (
-            <Card body outline color="primary" className="mx-auto w-50">
-                {this.props.children}
-                {this.state.loggedIn ?
-                    <div>You've been logged in</div>
-                :
-                    <div>
-                        {this.state.loggingIn2 && !this.state.loggedIn && <p className="text-secondary">Authenticating...</p>}
-                        {this.state.error && !this.state.loggedIn && <p className="text-warning">{this.state.error}</p>}
-                        <Button color="primary" disabled={this.state.loggingIn} onClick={()=>this.tryLogin()}>Login</Button>
-                    </div>
-                }
+            <Card body outline color="primary" className="oauth mx-auto w-50">
+                <CardTitle>{this.props.children}</CardTitle>
+                <CardText>
+                    {this.state.loggedIn ?
+                        <span> <i className="mx-auto fas fa-check text-success"/>You've been logged in</span>
+                    :
+                        <span>
+                            {this.state.loggingIn2 && !this.state.loggedIn && <span className="text-secondary">{this.state.loggingIn2 && <i className="mx-auto fas fa-sync-alt text-muted"/>}Authenticating...</span>}
+                            {this.state.error && !this.state.loggedIn && <span className="text-warning"><i className="mx-auto fas fa-times text-danger"/>{this.state.error}</span>}
+                            <Button color="primary" disabled={this.state.loggingIn} onClick={()=>this.tryLogin()}>Login</Button>
+                        </span>
+                    }
+                </CardText>
             </Card>
         )
     }
@@ -42,26 +46,26 @@ export default class OAuth extends Component {
             + '&redirect_uri=' + this.state.redirectUri
         let win = new BrowserWindow({
             width: 480, 
-            height: 640
+            height: 640,
+            autoHideMenuBar: true,
+            title: 'Login'
         })
         win.on('closed', (e) => {
             this.setState({ loggingIn: false })
         })
         let bv = new BrowserView({})
         win.setBrowserView(bv)
-        win.setTitle('Login')
         bv.webContents.on('did-finish-load', () => {
             let url = bv.webContents.getURL()
-            if (url.includes('?error')) {
+            if (url.includes('?error=')) {
                 this.setState({ error: "Oauth error:" + url.split('?error=')[1] })
                 win.close()
             } else if (url.includes('?code=')) {
                 this.setState({ loggingInPart2: true })
                 win.close()
                 let code = url.split('?code=')[1]
-                this.props.onAuth
                 request.defaults({proxy:'http://proxy-src.research.ge.com:8080/'})
-                var token = request.post(this.state.tokenUri, {
+                request.post(this.state.tokenUri, {
                     form: {
                         code,
                         client_id: this.state.clientId,
@@ -77,27 +81,10 @@ export default class OAuth extends Component {
                     } else {
                         this.setState({error: "error while getting token", loggingIn: false, loggingInPart2: false})
                     }
-                    console.log(body)
                 })
             }
         })
         bv.setBounds({x:0,y:0,width:480,height:640})
         bv.webContents.loadURL(uri)
-    }
-}
-
-export class GoogleOAuth extends Component {
-    render() {
-        return (
-            <OAuth authUri="https://accounts.google.com/o/oauth2/v2/auth"
-                tokenUri="https://www.googleapis.com/oauth2/v4/token"
-                clientId="730782245541-0ud5h4frebvr4r7tns0bmngb5l77lehc.apps.googleusercontent.com"
-                clientSecret="CZtK77OEqPnf-0PtX5OXJXw5"
-                scopes={['https://mail.google.com/']}
-                onLogin={this.props.onLogin}>
-                <CardTitle>Google Login</CardTitle>
-                <CardText/>
-            </OAuth> 
-        )
     }
 }

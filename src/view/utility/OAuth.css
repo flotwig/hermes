@@ -1,0 +1,14 @@
+.oauth i {
+    display: block;
+    font-size: 3em;
+}
+.oauth span {
+    width: 100%;
+    text-align: center;
+    display: block;
+}
+.oauth .fa-sync-alt {
+    animation-name: Spin;
+    animation-duration: .5s;
+    animation-iteration-count: infinite;
+}

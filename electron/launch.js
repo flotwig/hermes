@@ -5,4 +5,4 @@ const child_process = require('child_process')
 console.log('Launching Electron from ' + electron)
 
 // spawn Electron
-const child = child_process.spawn(electron, [process.argv[2]])
+const child = child_process.spawn(electron, [__dirname + '/index.js', process.argv[2], '--inspect=5858'])
