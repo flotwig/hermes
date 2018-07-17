@@ -41,6 +41,7 @@
     "react-dev-utils": "^5.0.1",
     "react-dom": "^16.4.1",
     "react-responsive-modal": "^3.1.0",
+    "react-toastify": "^4.1.0",
     "reactstrap": "^6.3.0",
     "request": "^2.87.0",
     "resolve": "1.6.0",

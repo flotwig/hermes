@@ -14,7 +14,7 @@ const Sync = {
     beginSyncing: (account) => {
         if (Sync.syncing[account.id] === true) return;
         Sync.syncing[account.id] = true
-        let syncModule = new (Sync.getModuleForAccountType(account.accountTypeId))(account)
+        let syncModule = new (Sync.getModuleForAccountType(account.accountTypeId))(account, Db)
         syncModule.sync(()=>{
             Sync.syncing[account.id] = false
         })

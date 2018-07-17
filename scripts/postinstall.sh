@@ -6,7 +6,7 @@
 #
 # 🤔 hmm...
 
-if [[ ! -e ./node_modules/sqlite3/lib/binding/electron-v2.0-linux-x64 ]] ; then
+if [[ ! -d ./node_modules/sqlite3/lib/binding/electron-v2.0-linux-x64 ]] ; then
     echo "🤔 Building sqlite3 native extension for Electron"
     ./node_modules/.bin/electron-rebuild
 else

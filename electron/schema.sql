@@ -21,20 +21,13 @@ CREATE TABLE messages(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     folderId INTEGER NOT NULL,
     subject TEXT,
-    fromAddress TEXT,
-    toAddress TEXT,
+    fromAddresses TEXT,
+    toAddresses TEXT,
     addedOn TEXT NOT NULL,
     receivedOn TEXT,
+    snippet TEXT,
+    bodyRaw TEXT,
+    bodyText TEXT,
     remoteRef TEXT,
-    body TEXT,
     FOREIGN KEY(folderId) REFERENCES folders(id)
 );
-CREATE TABLE messageParts(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    messageId INTEGER NOT NULL,
-    partId INTEGER,
-    body TEXT,
-    contentType TEXT,
-    contentEncoding TEXT,
-    FOREIGN KEY(messageId) REFERENCES messages(id)
-)
