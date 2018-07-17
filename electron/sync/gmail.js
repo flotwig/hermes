@@ -6,12 +6,12 @@ const Folder = require('../../src/model/Folder')
 const Message = require('../../src/model/Message')
 const { google } = require('googleapis')
 const withMimeParts = require('./withMimeParts')
-const queue = require('async/queue')
+const semaphore = require('semaphore')
 
 const GMAIL_BASE_URL = 'https://www.googleapis.com/gmail/v1/users/'
 
 const MIN_DELAY = 500
-const MAX_CONCURRENT = 10
+const MAX_CONCURRENT = 1
 
 function gmail(account, db) {
     this.db = db
@@ -32,25 +32,17 @@ function gmail(account, db) {
         expiry_date: moment(account.expiresAt)
     })
     this.gmail = google.gmail({ version: 'v1', auth: this.token })
-    console.log('token', this.token, 'gmail', this.gmail)
-    this.q = queue(this.delay, MAX_CONCURRENT)
+    if (moment(account.expiresAt) <= moment()) {
+        this.token.refreshAccessToken()
+        console.log('token', this.token, 'gmail', this.gmail)
+    }
+    this.sema = semaphore(MAX_CONCURRENT)
 }
 
-gmail.prototype.delay = function (args, userCb) {
-    args.method()(args, (error, res) => {
-        // Linear increase exponential increase
-        // see i learned something in school
-        if (error && error.code === 429) {
-            this.delay_ms = this.delay_ms * 2
-            // requeue
-            this.q.push(apiFunction, apiArgs, userCb)
-        } else {
-            if (!error) {
-                this.delay_ms = this.delay_ms - 1
-                if (this.delay_ms < MIN_DELAY) this.delay_ms = MIN_DELAY
-            }
-            userCb(error, res)
-        }
+gmail.prototype.queue = function(task, callback) {
+    this.sema.take(()=>{
+        task.method.bind(this.gmail.users)(task, callback)
+        setTimeout(this.sema.leave, 100)
     })
 }
 
@@ -64,7 +56,8 @@ gmail.prototype.refreshAuth = function () {
 
 gmail.prototype.syncLabels = function () {
     this.db.selectFoldersForAccountId(this.account.id, (error, knownFolders) => {
-        this.q.push( { method: ()=>this.gmail.users.labels.list, userId: 'me' }, (err, res) => {
+        this.queue( { method: this.gmail.users.labels.list, userId: 'me' }, (err, res) => {
+            if (err) return console.log(err, res)
             if (!res.data.labels) return
             if (err) return console.log('syncing error', err)
             res.data.labels.forEach((label) => {
@@ -95,7 +88,7 @@ gmail.prototype.syncLabels = function () {
 
 gmail.prototype.syncMessagesForFolder = function (folder) {
     this.db.selectMessageRemoteRefsForFolderId(folder.id, (err, knownMessages) => {
-        this.q.push({ method: ()=>this.gmail.users.messages.list, userId: 'me', labelIds: [folder.remoteRef] }, (err, res) => {
+        this.queue({ method: this.gmail.users.messages.list, userId: 'me', labelIds: [folder.remoteRef] }, (err, res) => {
             if (!res.data.messages) return
             if (err) return console.log('message sync err', err)
             console.log('messages ', res.data)
@@ -110,8 +103,8 @@ gmail.prototype.syncMessagesForFolder = function (folder) {
 }
 
 gmail.prototype.syncMessageById = function (id, folderId) {
-    this.q.push({
-        method: ()=>this.gmail.users.messages.get,
+    this.queue({
+        method: this.gmail.users.messages.get,
         userId: 'me',
         id,
         format: 'raw'
