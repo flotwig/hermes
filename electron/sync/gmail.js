@@ -7,12 +7,25 @@ const Message = require('../../src/model/Message')
 const MessagePart = require('../../src/model/MessagePart')
 const GMAIL_BASE_URL = 'https://www.googleapis.com/gmail/v1/users/'
 const Db = require('../db')
+const {google} = require('googleapis')
 
 function gmail(account) {
     this.account = account
-    this.refreshToken = account.refreshToken
-    this.accessToken = account.accessToken
-    this.expiresAt = moment(account.expiresAt)
+    this.token = new google.auth.OAuth2({
+        clientId: oauthParams.clientId,
+        clientSecret: oauthParams.clientSecret,
+        redirectUri: oauthParams.redirectUri,
+        tokenUrl: oauthParams.tokenUri
+    })
+    console.log(account)
+    this.token.setCredentials({
+        refresh_token: account.refreshToken,
+        access_token: account.accessToken,
+        token_type: 'Bearer',
+        expiry_date: moment(account.expiresAt)
+    })
+    this.gmail = google.gmail({version: 'v1', auth: this.token})
+    console.log('token', this.token, 'gmail', this.gmail)
 }
 
 gmail.prototype.sync = function(onComplete) {
@@ -25,8 +38,9 @@ gmail.prototype.refreshAuth = function() {
 
 gmail.prototype.syncLabels = function() {
     Db.selectFoldersForAccountId(this.account.id, (error, knownFolders) => {
-        this.request('me/labels', (err, res, body) => {
-            body.labels.forEach((label) => {
+        this.gmail.users.labels.list({userId:'me'}, (err, res) => {
+            if (err) return console.log('syncing error', err)
+            res.data.labels.forEach((label) => {
                 let knownFolder = knownFolders.find(folder => folder.remoteRef === label.id)
                 if (knownFolder) {
                     // folder exists, just check if we need to update name
@@ -44,7 +58,7 @@ gmail.prototype.syncLabels = function() {
                         shouldSync: label.type === 'system'
                     })
                     Db.insertFolder(folder, (err)=>{
-                        this.syncMessagesForFolder(Object.assign(folder, {id: this.lastID}))
+                        this.syncMessagesForFolder(Object.assign(folder, { id: this.lastID }))
                     })
                 }
             });
@@ -54,72 +68,65 @@ gmail.prototype.syncLabels = function() {
 
 gmail.prototype.syncMessagesForFolder = function(folder) {
     Db.selectMessageRemoteRefsForFolderId(folder.id, (err, knownMessages) => {
-        this.request('me/messages?labelIds[0]='+folder.remoteRef, (err, res, body) => {
-            body.messages.forEach((message) => {
+        this.gmail.users.messages.list({userId: 'me', labelIds: [folder.remoteRef]}, (err, res) => {
+            if (err) return console.log('message sync err', err)
+            res.data.messages.forEach((message) => {
                 if (!knownMessages.find(x => x.remoteRef === message.id)) {
-                    this.request('me/messages/' + message.id, (err, res, body) => {
-                        if (!body.payload) {
-                            console.log('no payload', err, res, body)
-                            return
-                        }
-                        let subject = body.payload.headers.find(x => x.name === 'Subject')
-                        let from = body.payload.headers.find(x => x.name === 'From')
-                        let to = body.payload.headers.find(x => x.name === 'To')
-                        let newMessage = new Message({
-                            folderId: folder.id,
-                            subject: subject ? subject.value : '',
-                            fromAddress: from ? from.value : '',
-                            toAddress: to ? to.value : '',
-                            receivedOn: moment(body.internalDate),
-                            snippet: body.snippet,
-                            remoteRef: body.id
-                        })
-                        Db.insertMessage(newMessage, (err) => {
-                            console.log(err, this)
-                            return
-                            if (!body.payload.parts) {
-                                // body is payload, not multi-part
-                                let contentType = body.payload.headers.find(x => x.name==='Content-Type')
-                                let contentEncoding = body.payload.headers.find(x => x.name==='Content-Transfer-Encoding')
-                                let newMessagePart = new MessagePart({
-                                    messageId: this.lastID,
-                                    partId: body.payload.partId,
-                                    body: body.payload.body,
-                                    contentType: contentType ? contentType.value : '',
-                                    contentEncoding: contentEncoding ? contentEncoding.value : '',
-                                })
-                                Db.insertMessagePart(newMessagePart)
-                            } else {
-                                body.payload.parts.forEach((messagePart) => {
-                                    let contentType = messagePart.headers.find(x => x.name==='Content-Type')
-                                    let contentEncoding = messagePart.headers.find(x => x.name==='Content-Transfer-Encoding')
-                                    let newMessagePart = new MessagePart({
-                                        messageId: this.lastID,
-                                        partId: messagePart.partId,
-                                        body: messagePart.body.data,
-                                        contentType: contentType ? contentType.value : '',
-                                        contentEncoding: contentEncoding ? contentEncoding.value : '',
-                                    })
-                                    Db.insertMessagePart(newMessagePart)
-                                })
-                            }
-                        })
-                    })
+                    this.syncMessageById(id)
                 }
             })
         })
     })
 }
 
-gmail.prototype.request = function(endpoint, cb) {
-    return request({
-        url: GMAIL_BASE_URL + endpoint,
-        headers: {
-            'Authorization': 'Bearer ' + this.accessToken
-        },
-        json: true
-    }, cb)
+gmail.prototype.syncMessageById = function(id) {
+    this.gmail.users.messages.get({userId: 'me', id: message.id}, (err, res) => {
+        if (!res.data.payload) {
+            console.log('no payload', err, res, res.data)
+            return
+        }
+        let subject = res.data.payload.headers.find(x => x.name === 'Subject')
+        let from = res.data.payload.headers.find(x => x.name === 'From')
+        let to = res.data.payload.headers.find(x => x.name === 'To')
+        let newMessage = new Message({
+            folderId: folder.id,
+            subject: subject ? subject.value : '',
+            fromAddress: from ? from.value : '',
+            toAddress: to ? to.value : '',
+            receivedOn: moment(res.data.internalDate),
+            snippet: res.data.snippet,
+            remoteRef: res.data.id
+        })
+        Db.insertMessage(newMessage, (err) => {
+            console.log(err, this)
+            if (!res.data.payload.parts) {
+                // body is payload, not multi-part
+                let contentType = res.data.payload.headers.find(x => x.name==='Content-Type')
+                let contentEncoding = res.data.payload.headers.find(x => x.name==='Content-Transfer-Encoding')
+                let newMessagePart = new MessagePart({
+                    messageId: this.lastID,
+                    partId: res.data.payload.partId,
+                    body: res.data.payload.body,
+                    contentType: contentType ? contentType.value : '',
+                    contentEncoding: contentEncoding ? contentEncoding.value : '',
+                })
+                Db.insertMessagePart(newMessagePart)
+            } else {
+                res.data.payload.parts.forEach((messagePart) => {
+                    let contentType = messagePart.headers.find(x => x.name==='Content-Type')
+                    let contentEncoding = messagePart.headers.find(x => x.name==='Content-Transfer-Encoding')
+                    let newMessagePart = new MessagePart({
+                        messageId: this.lastID,
+                        partId: messagePart.partId,
+                        body: messagePart.body.data,
+                        contentType: contentType ? contentType.value : '',
+                        contentEncoding: contentEncoding ? contentEncoding.value : '',
+                    })
+                    Db.insertMessagePart(newMessagePart)
+                })
+            }
+        })
+    })
 }
-
 
 module.exports = gmail

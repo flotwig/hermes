@@ -1,8 +1,9 @@
 const sqlite3 = require('sqlite3');
 const fs = require('fs');
 const mkdirp = require('mkdirp')
+const {app} = require('electron')
 
-const DB_DIR = process.env.HOME + '/.config/hermes/';
+const DB_DIR = app.getPath('appData') + '/hermes/';
 const DB_FILE = 'hermes.db';
 const DB_PATH = process.env.HERMES_DB || (DB_DIR + DB_FILE);
 
