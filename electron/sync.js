@@ -1,5 +1,5 @@
 const Db = require('./db')
-const gmail = require('./sync/gmail')
+const syncModules = require('./sync/index')
 
 const Sync = {
     syncing: {},
@@ -20,8 +20,7 @@ const Sync = {
         })
     },
     getModuleForAccountType: (accountTypeId) => {
-        return gmail
-        return require(__dirname + '/sync/' + accountTypeId)
+        return syncModules[accountTypeId]
     }
 }
 
