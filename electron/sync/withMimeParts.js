@@ -1,4 +1,5 @@
-const parse = require('emailjs-mime-parser')
+const mimeParser = require('emailjs-mime-parser').default
+const base64 = require('emailjs-base64')
 const Message = require('../../src/model/Message')
 
 /**
@@ -7,15 +8,17 @@ const Message = require('../../src/model/Message')
  * @param {string} mimeText
  */
 const withMimeParts = (message, mimeText) => {
-    const mimeMessage = parse(mimeText)
-    console.log(message, mimeMessage)
+    mimeText = base64.decode(mimeText)
+    const mimeMessage = mimeParser(mimeText)
+    console.log(message, mimeText)
     Object.assign(message, {
         // subject:,
         // fromAddress:,
         // toAddress:
         // receivedOn:,
         // snippet:
-        // body:
+        bodyRaw: mimeText,
+        bodyText: '',
     })
 }
 
