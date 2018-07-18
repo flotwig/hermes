@@ -32,7 +32,7 @@ Db._install = () => {
  * @param {Object} obj 
  * @param {string} keep Keys on the original object to keep
  */
-function _objArgs(obj, ...keep) {
+Db._objArgs = (obj, ...keep) => {
     var out = {}
     Object.keys(obj)
         .filter(x => keep.includes(x))
@@ -42,58 +42,44 @@ function _objArgs(obj, ...keep) {
     return out
 }
 
-Db.insertAccount = (account, cb) => {
-    Db.conn.run("\
-        INSERT INTO accounts \
-        (accountTypeId, addedOn, accessToken, refreshToken, expiresAt) \
-        VALUES \
-        ($accountTypeId, DATETIME('now'), $accessToken, $refreshToken, $expiresAt);\
-    ", _objArgs(account, 'accountTypeId', 'accessToken', 'refreshToken', 'expiresAt'), cb)
+Db._genericInsert = (tableName, object, cb, ...keys) => {
+    let query = "INSERT INTO "+tableName
+        +" ("+keys.join(', ')+") "
+        +"VALUES ("+keys.map(x=>x==='addedOn'?"DATETIME('now')":'$'+x)+');'
+    Db.conn.run(query, Db._objArgs(object, ...keys.filter(x=>x!=='addedOn')), cb)
 }
+
+Db._genericUpdate = (tableName, object, cb) => {
+    let keys = Object.keys(object).filter(k=>!['id','addedOn'].includes(k))
+    let query = "UPDATE "+tableName+" SET "+keys.map(k=>k+' = $'+k).join(', ')+' WHERE id=$id;'
+    Db.conn.run(query, Db._objArgs(object, 'id', ...keys), cb)
+}
+
+Db.insertAccount = (account, cb) => 
+    Db._genericInsert('accounts', account, cb, 'accountTypeId', 'accessToken', 'refreshToken', 'expiresAt', 'addedOn')
+
+Db.updateAccount = (account, cb) => 
+    Db._genericUpdate('accounts', account, cb)
 
 Db.insertFolder = (folder, cb) => {
     if (!folder.parentId) folder.parentId = undefined;
-    Db.conn.run("\
-        INSERT INTO folders \
-        (name, accountId, parentId, lastSynced, remoteRef, shouldSync) \
-        VALUES \
-        ($name, $accountId, $parentId, $lastSynced, $remoteRef, $shouldSync);\
-    ", _objArgs(folder, 'name', 'accountId', 'parentId', 'lastSynced', 'remoteRef', 'shouldSync'), cb)
+    Db._genericInsert('folders', folder, cb, 'name', 'accountId', 'parentId', 'lastSynced', 'remoteRef', 'shouldSync', 'addedOn')
 }
 
-Db.insertMessage = (message, cb) => {
-    Db.conn.run("\
-        INSERT INTO messages \
-        (folderId, subject, fromAddress, toAddress, addedOn, receivedOn, remoteRef, snippet) \
-        VALUES \
-        ($folderId, $subject, $fromAddress, $toAddress, DATETIME('now'), $receivedOn, $remoteRef, $snippet);\
-    ", _objArgs(message, 'folderId', 'subject', 'fromAddress', 'toAddress', 'receivedOn', 'remoteRef', 'snippet'), cb)
-}
+Db.insertMessage = (message, cb) => 
+    Db._genericInsert('messages', message, cb, 'folderId', 'subject', 'fromAddresses', 'unread', 'toAddresses', 'receivedOn', 'snippet', 'bodyRaw', 'bodyText', 'remoteRef', 'addedOn')
 
-Db.insertMessagePart = (messagePart, cb) => {
-    Db.conn.run("\
-        INSERT INTO messageParts \
-        (messageId, partId, body, contentType, contentEncoding) \
-        VALUES \
-        ($messageId, $partId, $body, $contentType, $contentEncoding);\
-    ", _objArgs(messagePart, 'messageId', 'partId', 'body', 'contentType', 'contentEncoding'), cb);
-}
-
-Db.selectFoldersForAccountId = (accountId, cb) => {
+Db.selectFoldersForAccountId = (accountId, cb) => 
     Db.conn.all("SELECT * FROM folders WHERE accountId = ?;", [accountId], cb)
-}
 
-Db.selectMessageRemoteRefsForFolderId = (folderId, cb) => {
+Db.selectMessageRemoteRefsForFolderId = (folderId, cb) => 
     Db.conn.all("SELECT remoteRef FROM messages WHERE folderId = ?", [folderId], cb)
-}
 
-Db.updateFolderNameById = (folderId, name, cb) => {
+Db.updateFolderNameById = (folderId, name, cb) => 
     Db.conn.run("UPDATE folders SET name = ? WHERE id = ?;", [name, folderId], cb)
-}
 
-Db.selectAccounts = (cb) => {
+Db.selectAccounts = (cb) => 
     Db.conn.all("SELECT * FROM accounts;", cb)
-}
 
 if (!Db.conn) {
     Db._init()

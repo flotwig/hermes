@@ -2254,7 +2254,7 @@ emailjs-addressparser@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/emailjs-addressparser/-/emailjs-addressparser-2.0.2.tgz#fa8e6ff989667da8ae41d7316a7dfe6abe3c9d51"
 
-emailjs-base64@^1.1.4:
+emailjs-base64@^1.1.2, emailjs-base64@^1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/emailjs-base64/-/emailjs-base64-1.1.4.tgz#392fa38cb6aa35dccd3af3637ffc14c1c7ce9612"
 
@@ -2273,6 +2273,12 @@ emailjs-mime-parser@^2.0.5:
     emailjs-addressparser "^2.0.1"
     emailjs-mime-codec "^2.0.7"
     ramda "^0.25.0"
+
+emailjs-utf7@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/emailjs-utf7/-/emailjs-utf7-4.0.1.tgz#ca6bad6b409605d11b4108d8785c70e42644f4b9"
+  dependencies:
+    emailjs-base64 "^1.1.2"
 
 emoji-regex@^6.1.0:
   version "6.5.1"

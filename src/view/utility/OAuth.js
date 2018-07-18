@@ -48,7 +48,8 @@ export default class OAuth extends Component {
             width: 480, 
             height: 640,
             autoHideMenuBar: true,
-            title: 'Login'
+            title: 'Login',
+            partition: new Date().getTime().toString()
         })
         win.on('closed', (e) => {
             this.setState({ loggingIn: false })

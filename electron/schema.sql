@@ -29,5 +29,6 @@ CREATE TABLE messages(
     bodyRaw TEXT,
     bodyText TEXT,
     remoteRef TEXT,
+    unread BOOLEAN,
     FOREIGN KEY(folderId) REFERENCES folders(id)
 );

@@ -24,7 +24,6 @@ function gmail(account, db) {
         redirectUri: oauthParams.redirectUri,
         tokenUrl: oauthParams.tokenUri
     })
-    console.log(account)
     this.token.setCredentials({
         refresh_token: account.refreshToken,
         access_token: account.accessToken,
@@ -32,9 +31,15 @@ function gmail(account, db) {
         expiry_date: moment(account.expiresAt)
     })
     this.gmail = google.gmail({ version: 'v1', auth: this.token })
-    if (moment(account.expiresAt) <= moment()) {
-        this.token.refreshAccessToken()
-        console.log('token', this.token, 'gmail', this.gmail)
+    if (moment(account.expiresAt) <= moment() || true) {
+        this.token.refreshAccessToken().then((data) => {
+            Object.assign(account, {
+                accessToken: data.credentials.access_token,
+                expiresAt: moment(data.credentials.expiry_data),
+                refreshToken: data.credentials.refresh_token
+            })
+            this.db.updateAccount(account)
+        }).error(err => console.log('error refreshing gmail access token', { err, account }))
     }
     this.sema = semaphore(MAX_CONCURRENT)
 }
@@ -67,7 +72,8 @@ gmail.prototype.syncLabels = function () {
                     if (knownFolder.name !== label.name) {
                         this.db.updateFolderNameById(knownFolder.id, label.name)
                     }
-                    this.syncMessagesForFolder(knownFolder)
+                    if (knownFolder.shouldSync)
+                        this.syncMessagesForFolder(knownFolder)
                 } else {
                     // we don't know of this folder, create it
                     let folder = new Folder({
@@ -78,7 +84,8 @@ gmail.prototype.syncLabels = function () {
                         shouldSync: label.type === 'system'
                     })
                     this.db.insertFolder(folder, (err) => {
-                        this.syncMessagesForFolder(Object.assign(folder, { id: this.lastID }))
+                        if (folder.shouldSync)
+                            this.syncMessagesForFolder(Object.assign(folder, { id: this.lastID }))
                     })
                 }
             });
@@ -91,18 +98,17 @@ gmail.prototype.syncMessagesForFolder = function (folder) {
         this.queue({ method: this.gmail.users.messages.list, userId: 'me', labelIds: [folder.remoteRef] }, (err, res) => {
             if (!res.data.messages) return
             if (err) return console.log('message sync err', err)
-            console.log('messages ', res.data)
 
             res.data.messages.forEach((message) => {
                 if (!knownMessages.find(x => x.remoteRef === message.id)) {
-                    this.syncMessageById(message.id, folder.id)
+                    this.syncMessageById(message.id, folder)
                 }
             })
         })
     })
 }
 
-gmail.prototype.syncMessageById = function (id, folderId) {
+gmail.prototype.syncMessageById = function (id, folder) {
     this.queue({
         method: this.gmail.users.messages.get,
         userId: 'me',
@@ -111,12 +117,13 @@ gmail.prototype.syncMessageById = function (id, folderId) {
     },
         (err, res) => {
             // sync in RAW format and let MIME parser get what we need
-            let message = withMimeParts(new Message({
-                folderId,
+            this.db.insertMessage(withMimeParts(new Message({
+                folder,
                 addedOn: moment(),
                 snippet: res.data.snippet,
-                remoteRef: res.data.id
-            }), res.data.raw)
+                remoteRef: res.data.id,
+                unread: res.data.labelIds.includes('UNREAD'),
+            }), res.data.raw.replace(/-/g, '+').replace(/_/g, '/') ))
         })
 }
 

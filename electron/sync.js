@@ -7,8 +7,14 @@ const Sync = {
         Db.selectAccounts((err, rows) => {
             if (!rows) return
             rows.forEach(account => {
-                setTimeout(()=>Sync.beginSyncing(account), 1)
-            });
+                setTimeout(()=>{
+                    try {
+                        Sync.beginSyncing(account)
+                    } catch (e) {
+                        console.log('sync error ', { account, e })
+                    }
+                });
+            })
         })
     },
     beginSyncing: (account) => {

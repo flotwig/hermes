@@ -12,6 +12,7 @@ module.exports = function Message(message) {
     this.bodyRaw = '' // MIME body
     this.bodyText = '' // what we think the body text is, for searching, etc.
     this.remoteRef = '' // remote ID for referencing
+    this.unread = false
     if (message)
         Object.assign(this, message)
 }

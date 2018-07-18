@@ -16,7 +16,7 @@ app.on('ready', () => {
             autoHideMenuBar: true
         }
     )
-    mainWindow.loadURL(process.argv[2])
+    mainWindow.loadURL(process.argv[3])
 })
 
 console.log = (...log) => {
