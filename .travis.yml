@@ -49,5 +49,4 @@ deploy:
     - dist/Hermes-*-mac.zip
   on:
     repo: flotwig/hermes
-    tags: true
-    all_branches: true
+    branch: master

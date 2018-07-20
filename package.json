@@ -7,7 +7,7 @@
   },
   "homepage": "https://zach.bloomqu.ist/hermes",
   "description": "A simple, searchable multi-platform email client.",
-  "version": "0.1.0",
+  "version": "0.0.1-prealpha",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.1.0",
