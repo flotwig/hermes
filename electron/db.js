@@ -81,6 +81,9 @@ Db.updateFolderNameById = (folderId, name, cb) =>
 Db.selectAccounts = (cb) => 
     Db.conn.all("SELECT * FROM accounts;", cb)
 
+Db.selectFolders = (cb) =>
+    Db.conn.all("SELECT * FROM folders;", cb)
+
 if (!Db.conn) {
     Db._init()
 }

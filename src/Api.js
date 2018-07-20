@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ApiActions from './ApiActions'
+import { observable, set } from 'mobx';
 
 const {ipcRenderer} = window.require('electron')
 
@@ -9,6 +10,10 @@ export const ApiConsumer = ApiContext.Consumer
 export default class Api extends Component {
     constructor(props) {
         super(props)
+        this.store = observable({
+            accounts: [],
+            folders: [],
+        })
         this.callbacks = {}
         this.sequence = 0
     }
@@ -20,10 +25,13 @@ export default class Api extends Component {
                 callback(payload, error)
             }
         })
+        ipcRenderer.on('store-update', (event, update) => {
+            set(this.store, update)
+        })
     }
     render() {
         return (
-            <ApiContext.Provider value={this}>
+            <ApiContext.Provider value={{store: this.store}}>
                 {this.props.children}
             </ApiContext.Provider>
         )

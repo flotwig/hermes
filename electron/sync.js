@@ -1,5 +1,6 @@
 const Db = require('./db')
 const syncModules = require('./sync/index')
+const Api = require('./api')
 
 const Sync = {
     syncing: {},
@@ -13,8 +14,12 @@ const Sync = {
                     } catch (e) {
                         console.log('sync error ', { account, e })
                     }
-                });
+                }, 5000);
             })
+            Api.sendStoreUpdate({ accounts: rows })
+        })
+        Db.selectFolders((err, folders) => {
+            Api.sendStoreUpdate({ folders })
         })
     },
     beginSyncing: (account) => {

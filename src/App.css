@@ -31,6 +31,6 @@
   height: 100%;
 }
 
-.container-fluid .row {
+.container-fluid > .row {
   height: 100%;
 }

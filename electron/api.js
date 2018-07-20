@@ -10,12 +10,16 @@ var Api = {
     sendResponse: (sender, cbId, response, error) => {
         sender.send('api-response', cbId, response, error)
     },
+    sendStoreUpdate: (update) => {
+        mainWindow.send('store-update', update)
+    },
     actions: {}
 }
 
 Api.actions[ApiActions.ADD_ACCOUNT] = (payload, cb) => {
     Db.insertAccount(payload, (error) => {
         if (!error) {
+            Db.selectAccounts((err, accounts) => Api.sendStoreUpdate({ accounts }))
             Sync.beginSyncing(Object.assign(payload, {id:this.lastID}))
         }
         cb(this, error)
