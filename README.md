@@ -7,3 +7,4 @@ Hermes
 
 Currently in prototyping stage.
 
+[Grab the latest build here.](https://github.com/flotwig/hermes/releases/latest)
