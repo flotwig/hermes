@@ -42,8 +42,12 @@ deploy:
   api_key:
     secure: kyBZI7EJ7TkaMFudhfd3C/iBPA9ueDC9ju+wTxcRBk9VhVjPQLInghKFNSi1QVQoxT1HIMoEFi5NP9Ww9VWrtzcjQn3SyFAaTfuKg2K3t5Ai9AxJ97rjC9XOtclinpeYDXjOyuFj8nBB8bwt+lHINorxd1uinKEplxDnIheAuJ5CP5IuqwPDUSQ0iQg5v7M5CTPRM/yR7joZxWDnvQkTBrPD9cqQi9QBTETLSjDB8Ij5kAPKKaD9+7GVbxYMdGKDknss8TDSNnULkKH+35sQ5s/FmFIG1WzBF/AP4uYqNtheDvZlqUc+AHaW9DD4k0sKl8yQjbuVsFDhT8Kae0WYdKpc5MqEKm0lGWwWdwNeh1YoXpfAhq6gXyS6S0baW63KQ9Pv4kcJPCh8OEsARViktiPibMcQkoyjU0S1wLVsqVe+5Z/tWWRwbbZGpuqp8xlSoOOfeDMwQgapKaW2mVxDpNCg/mGCh4D7lBJC/zmhCYZw64PByt2OXexN6V+1waRRRZXzqLGs6v15iNSAL1Qxk9D5dUrHkt6QJR6cjGwoJHerxvS4G/20fjDsfz8OWdXSU6KAGASNSQvIgncDpNyvKRRQpLcaKAJy9Ax02MnBxc/myyEDu39j8U1bwlwbeSrAzF944Oj46W5MX4zKSS+w7p2vGhY9DZu6Xysqo6YNQBc=
   file: 
-    - dist/hermes*
-    - dist/Hermes*
+    - dist/hermes-*-x86_64.AppImage
+    - dist/Hermes.Setup.*.exe
+    - dist/hermes_*_amd64.deb
+    - dist/Hermes-*.dmg
+    - dist/Hermes-*-mac.zip
   on:
     repo: flotwig/hermes
-    branch: master
+    tags: true
+    all_branches: true
