@@ -5,6 +5,7 @@
     "email": "hermes@bloomqu.ist",
     "url": "https://zach.bloomqu.ist/"
   },
+  "homepage": "https://zach.bloomqu.ist/hermes",
   "description": "A simple, searchable multi-platform email client.",
   "version": "0.1.0",
   "private": true,
@@ -137,7 +138,11 @@
       "src"
     ],
     "linux": {
-      "category": "Office"
+      "category": "Office",
+      "target": [
+        "deb",
+        "AppImage"
+      ]
     }
   }
 }

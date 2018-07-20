@@ -7,7 +7,7 @@ export default class FolderPane extends Component {
             <ApiConsumer>
                 {({store}) => {
                     store.accounts.map((account) => {
-                        account.accountTypeId
+                        return account.accountTypeId
                     })
                 }}
             </ApiConsumer>
